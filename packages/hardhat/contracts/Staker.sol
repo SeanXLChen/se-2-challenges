@@ -12,9 +12,22 @@ contract Staker {
       exampleExternalContract = ExampleExternalContract(exampleExternalContractAddress);
   }
 
+  // events
+  event Stake(address indexed sender, uint256 amount);
+
+  // mapping to store the balances of the stakers
+  mapping(address => uint256) public balances;
+
+  // threashold to be met
+  uint256 public constant threshold = 1 ether;
+
   // Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
   // (Make sure to add a `Stake(address,uint256)` event and emit it for the frontend `All Stakings` tab to display)
-
+  function stake() public payable {
+    require(msg.value > 0, "Stake amount should be greater than 0");
+    balances[msg.sender] += msg.value;
+    emit Stake(msg.sender, msg.value);
+  }
 
   // After some `deadline` allow anyone to call an `execute()` function
   // If the deadline has passed and the threshold is met, it should call `exampleExternalContract.complete{value: address(this).balance}()`

@@ -51,11 +51,25 @@ contract Staker {
   }
 
   // If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
-
+  function withdraw() public {
+    require(openForWithdraw, "Not open for withdraw yet");
+    uint256 amount = balances[msg.sender];
+    balances[msg.sender] = 0;
+    (bool success, ) = payable(msg.sender).call{value: amount}("");
+    require(success, "Transfer failed.");
+  }
 
   // Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
-
+  function timeLeft() public view returns (uint256) {
+    if (block.timestamp >= deadline) {
+      return 0;
+    } else {
+      return deadline - block.timestamp;
+    }
+  }
 
   // Add the `receive()` special function that receives eth and calls stake()
-
+  receive() external payable {
+    stake();
+  }
 }

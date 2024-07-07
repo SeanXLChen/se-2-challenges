@@ -21,17 +21,34 @@ contract Staker {
   // threashold to be met
   uint256 public constant threshold = 1 ether;
 
+  // deadline to be met
+  uint256 public deadline = block.timestamp + 2 minutes;
+
+  // indicator to check whether able to withdraw or not
+  bool public openForWithdraw = false;
+
   // Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
   // (Make sure to add a `Stake(address,uint256)` event and emit it for the frontend `All Stakings` tab to display)
   function stake() public payable {
     require(msg.value > 0, "Stake amount should be greater than 0");
     balances[msg.sender] += msg.value;
     emit Stake(msg.sender, msg.value);
+    console.log("Stake amount: %s", msg.value/1e18);
   }
 
   // After some `deadline` allow anyone to call an `execute()` function
   // If the deadline has passed and the threshold is met, it should call `exampleExternalContract.complete{value: address(this).balance}()`
-
+  function execute() public {
+    // first check if the deadline has passed
+    require(block.timestamp >= deadline, "Deadline has not passed yet");
+    // check if the threshold is met
+    if (address(this).balance >= threshold) {
+      exampleExternalContract.complete{value: address(this).balance}();
+      openForWithdraw = false;
+    } else {
+      openForWithdraw = true;
+    }
+  }
 
   // If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
 
